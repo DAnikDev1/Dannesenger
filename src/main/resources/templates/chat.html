@@ -37,18 +37,18 @@
             padding: 10px 15px;
             margin: 5px 0;
             border-radius: 10px;
-            word-wrap: break-word; /* Перенос длинных слов */
+            word-wrap: break-word;
             max-width: 60%;
         }
 
         .message.user {
-            background-color: #dcf8c6;
-            align-self: flex-end; /* Выравнивание сообщений пользователя по правому краю */
+            background-color: #dcf8c6; /* Зеленый фон для сообщений пользователя */
+            align-self: flex-end;
         }
 
         .message.other {
-            background-color: #fff;
-            align-self: flex-start; /* Выравнивание сообщений от других по левому краю */
+            background-color: #e6f7ff; /* Голубой фон для сообщений других пользователей */
+            align-self: flex-start;
         }
 
         #messageForm {
@@ -97,7 +97,7 @@
     </div>
 </div>
 <form id="messageForm" action="#">
-    <input type="text" id="messageInput" autocomplete="off" placeholder="Введите сообщение..." />
+    <input type="text" id="messageInput" autocomplete="off" placeholder="Введите сообщение..." maxlength="600" />
     <button type="submit" id="sendButton">Отправить</button>
 </form>
 
@@ -112,7 +112,8 @@
         stompClient.connect({}, function(frame) {
             console.log('Connected: ' + frame);
             stompClient.subscribe('/topic/messages', function(messageOutput) {
-                showMessage(JSON.parse(messageOutput.body));
+                var message = JSON.parse(messageOutput.body);
+                showMessage(message);
             });
         });
 
@@ -130,6 +131,8 @@
         });
 
         function showMessage(message) {
+            if (!message) return; // Если сообщение пустое, ничего не делаем
+
             var chat = document.getElementById('chat');
             var messageElement = document.createElement('div');
             messageElement.classList.add('message');
