@@ -1,0 +1,14 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <title>Joining in chat</title>
+</head>
+<body>
+<h1>Write your name</h1>
+<form action="/chat" method="post">
+  <input type="text" name="username" required minlength="3" maxlength="20"/>
+  <button type="submit">Join</button>
+</form>
+<p th:text="${error}"></p>
+</body>
+</html>

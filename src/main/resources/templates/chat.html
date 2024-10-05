@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <title>Чат</title>
+    <!-- Подключаем библиотеки -->
+    <script src="https://cdn.jsdelivr.net/npm/sockjs-client/dist/sockjs.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/stompjs/lib/stomp.min.js"></script>
+    <!-- Добавляем стили -->
+    <style>
+        body {
+            background-color: #f0f0f0; /* Серый фон */
+            margin: 0;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            height: 100vh;
+        }
+
+        #chat-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            padding: 20px;
+            overflow-y: auto;
+        }
+
+        #chat {
+            display: flex;
+            flex-direction: column;
+            max-width: 800px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .message {
+            padding: 10px 15px;
+            margin: 5px 0;
+            border-radius: 10px;
+            word-wrap: break-word; /* Перенос длинных слов */
+            max-width: 60%;
+        }
+
+        .message.user {
+            background-color: #dcf8c6;
+            align-self: flex-end; /* Выравнивание сообщений пользователя по правому краю */
+        }
+
+        .message.other {
+            background-color: #fff;
+            align-self: flex-start; /* Выравнивание сообщений от других по левому краю */
+        }
+
+        #messageForm {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 10px;
+            background-color: #ddd;
+        }
+
+        #messageInput {
+            width: 70%;
+            max-width: 600px;
+            padding: 10px;
+            font-size: 16px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+        }
+
+        #sendButton {
+            padding: 10px 20px;
+            margin-left: 10px;
+            font-size: 16px;
+            background-color: #4CAF50;
+            color: #fff;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+
+        #sendButton:hover {
+            background-color: #45a049;
+        }
+
+        h1 {
+            text-align: center;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+<h1>Добро пожаловать, <span th:text="${username}"></span>!</h1>
+<div id="chat-container">
+    <div id="chat">
+        <!-- Здесь будут отображаться сообщения -->
+    </div>
+</div>
+<form id="messageForm" action="#">
+    <input type="text" id="messageInput" autocomplete="off" placeholder="Введите сообщение..." />
+    <button type="submit" id="sendButton">Отправить</button>
+</form>
+
+<!-- Помещаем скрипт после всех элементов -->
+<script th:inline="javascript">
+    document.addEventListener('DOMContentLoaded', function() {
+        var username = /*[[${username}]]*/ 'Anonymous';
+
+        var socket = new SockJS('/chat');
+        var stompClient = Stomp.over(socket);
+
+        stompClient.connect({}, function(frame) {
+            console.log('Connected: ' + frame);
+            stompClient.subscribe('/topic/messages', function(messageOutput) {
+                showMessage(JSON.parse(messageOutput.body));
+            });
+        });
+
+        document.getElementById('messageForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            var messageContent = document.getElementById('messageInput').value.trim();
+            if (messageContent) {
+                var chatMessage = {
+                    from: username,
+                    content: messageContent
+                };
+                stompClient.send("/app/sendMessage", {}, JSON.stringify(chatMessage));
+                document.getElementById('messageInput').value = '';
+            }
+        });
+
+        function showMessage(message) {
+            var chat = document.getElementById('chat');
+            var messageElement = document.createElement('div');
+            messageElement.classList.add('message');
+
+            if (message.from === username) {
+                messageElement.classList.add('user');
+            } else {
+                messageElement.classList.add('other');
+            }
+
+            messageElement.textContent = message.from + ': ' + message.content;
+            chat.appendChild(messageElement);
+            chat.scrollTop = chat.scrollHeight; // Прокрутка чата вниз
+        }
+    });
+</script>
+</body>
+</html>
