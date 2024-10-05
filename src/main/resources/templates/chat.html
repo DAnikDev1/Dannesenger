@@ -8,15 +8,18 @@
     <!-- Добавляем стили -->
     <style>
         body {
-            background-color: #f0f0f0; /* Серый фон */
+            background-color: #2c2c2c; /* Темно-серый фон */
+            color: #f0f0f0; /* Светлый текст */
             margin: 0;
             font-family: Arial, sans-serif;
             display: flex;
             flex-direction: column;
             height: 100vh;
+            position: relative;
         }
 
         #chat-container {
+            background-color: #1e1e1e; /* Темный фон для области чата */
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -39,16 +42,30 @@
             border-radius: 10px;
             word-wrap: break-word;
             max-width: 60%;
+            color: #f0f0f0;
         }
 
         .message.user {
-            background-color: #dcf8c6; /* Зеленый фон для сообщений пользователя */
+            background-color: #3a3a3a;
             align-self: flex-end;
         }
 
         .message.other {
-            background-color: #e6f7ff; /* Голубой фон для сообщений других пользователей */
+            background-color: #4a4a4a;
             align-self: flex-start;
+        }
+
+        .message.system {
+            background-color: #555;
+            align-self: center;
+            font-style: italic;
+        }
+
+        .timestamp {
+            font-size: 10px;
+            color: #999;
+            text-align: right;
+            margin-top: 5px;
         }
 
         #messageForm {
@@ -56,7 +73,7 @@
             justify-content: center;
             align-items: center;
             padding: 10px;
-            background-color: #ddd;
+            background-color: #333;
         }
 
         #messageInput {
@@ -64,8 +81,10 @@
             max-width: 600px;
             padding: 10px;
             font-size: 16px;
-            border: 1px solid #ccc;
+            border: 1px solid #555;
             border-radius: 5px;
+            background-color: #1e1e1e;
+            color: #f0f0f0;
         }
 
         #sendButton {
@@ -87,21 +106,58 @@
             text-align: center;
             margin-top: 20px;
         }
+
+        #user-list {
+            position: absolute;
+            top: 80px;
+            left: 20px;
+            background-color: #1e1e1e;
+            padding: 10px;
+            border-radius: 5px;
+            color: #f0f0f0;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        #user-list h3 {
+            margin-top: 0;
+        }
+
+        #user-list ul {
+            list-style-type: none;
+            padding-left: 0;
+        }
+
+        #user-list li {
+            margin: 5px 0;
+        }
     </style>
 </head>
 <body>
 <h1>Добро пожаловать, <span th:text="${username}"></span>!</h1>
+
+<!-- Список пользователей -->
+<div id="user-list">
+    <h3>Пользователи онлайн:</h3>
+    <ul id="users">
+        <!-- Список пользователей будет обновляться динамически -->
+    </ul>
+</div>
+
+<!-- Контейнер чата -->
 <div id="chat-container">
     <div id="chat">
         <!-- Здесь будут отображаться сообщения -->
     </div>
 </div>
+
+<!-- Форма отправки сообщений -->
 <form id="messageForm" action="#">
     <input type="text" id="messageInput" autocomplete="off" placeholder="Введите сообщение..." maxlength="600" />
     <button type="submit" id="sendButton">Отправить</button>
 </form>
 
-<!-- Помещаем скрипт после всех элементов -->
+<!-- Скрипты -->
 <script th:inline="javascript">
     document.addEventListener('DOMContentLoaded', function() {
         var username = /*[[${username}]]*/ 'Anonymous';
@@ -115,6 +171,10 @@
                 var message = JSON.parse(messageOutput.body);
                 showMessage(message);
             });
+            stompClient.subscribe('/topic/users', function(userListOutput) {
+                var users = JSON.parse(userListOutput.body);
+                updateUserList(users);
+            });
         });
 
         document.getElementById('messageForm').addEventListener('submit', function(e) {
@@ -123,7 +183,8 @@
             if (messageContent) {
                 var chatMessage = {
                     from: username,
-                    content: messageContent
+                    content: messageContent,
+                    timestamp: new Date().toISOString()
                 };
                 stompClient.send("/app/sendMessage", {}, JSON.stringify(chatMessage));
                 document.getElementById('messageInput').value = '';
@@ -139,13 +200,30 @@
 
             if (message.from === username) {
                 messageElement.classList.add('user');
+            } else if (message.from === 'Система') {
+                messageElement.classList.add('system');
             } else {
                 messageElement.classList.add('other');
             }
 
-            messageElement.textContent = message.from + ': ' + message.content;
+            var timestamp = new Date(message.timestamp).toLocaleTimeString();
+
+            messageElement.innerHTML = `<span>${message.from}: ${message.content}</span>
+                                            <div class="timestamp">${timestamp}</div>`;
+
             chat.appendChild(messageElement);
             chat.scrollTop = chat.scrollHeight; // Прокрутка чата вниз
+        }
+
+        function updateUserList(users) {
+            var usersList = document.getElementById('users');
+            usersList.innerHTML = ''; // Очищаем текущий список
+
+            users.forEach(function(user) {
+                var userElement = document.createElement('li');
+                userElement.textContent = user;
+                usersList.appendChild(userElement);
+            });
         }
     });
 </script>
