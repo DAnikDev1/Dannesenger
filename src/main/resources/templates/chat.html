@@ -16,15 +16,17 @@
             flex-direction: column;
             height: 100vh;
         }
+        h1 {
+            text-align: center;
+            margin: 0;
+            padding: 20px 0;
+            background-color: #f0f0f0;
+        }
 
         #chat-container {
-            background-color: #fff;
             flex: 1;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-end;
-            padding: 20px;
             overflow-y: auto;
+            background-color: #fff;
         }
 
         #chat {
@@ -33,6 +35,7 @@
             max-width: 800px;
             margin: 0 auto;
             width: 100%;
+            padding: 20px;
         }
 
         .message {
@@ -271,6 +274,8 @@
 
             chat.appendChild(messageElement);
             chat.scrollTop = chat.scrollHeight;
+            var chatContainer = document.getElementById('chat-container');
+            chatContainer.scrollTop = chatContainer.scrollHeight;
         }
     });
 </script>
