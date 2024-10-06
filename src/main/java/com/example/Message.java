@@ -6,6 +6,7 @@ public class Message {
     private String from;
     private String content;
     private LocalDateTime timestamp;
+    private String image; // Новое поле для изображения
 
     // Конструкторы
     public Message() {
@@ -18,7 +19,6 @@ public class Message {
         this.timestamp = LocalDateTime.now();
     }
 
-    // Геттеры и сеттеры
     public String getFrom() {
         return from;
     }
@@ -41,5 +41,13 @@ public class Message {
 
     public void setTimestamp(LocalDateTime timestamp) {
         this.timestamp = timestamp;
+    }
+
+    public String getImage() {
+        return image;
+    }
+
+    public void setImage(String image) {
+        this.image = image;
     }
 }
