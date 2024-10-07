@@ -5,6 +5,9 @@ import org.springframework.messaging.handler.annotation.MessageMapping;
 import org.springframework.messaging.handler.annotation.SendTo;
 import org.springframework.stereotype.Controller;
 
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+
 @Controller
 public class MessageController {
 
@@ -20,6 +23,7 @@ public class MessageController {
 
         if (image != null) {
         }
+        message.setTimestamp(LocalDateTime.now(ZoneId.of("Asia/Yekaterinburg")));
 
         return message;
     }
