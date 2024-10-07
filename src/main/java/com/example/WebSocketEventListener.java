@@ -12,6 +12,7 @@ import org.springframework.web.socket.messaging.SessionConnectedEvent;
 import org.springframework.web.socket.messaging.SessionDisconnectEvent;
 
 import java.time.LocalDateTime;
+import java.time.ZoneId;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -20,6 +21,8 @@ public class WebSocketEventListener {
     private final SimpMessagingTemplate messagingTemplate;
     private final ConcurrentHashMap<String, String> sessionIdUsernameMap = new ConcurrentHashMap<>();
 
+    @Autowired
+    private UserService userService;
     public WebSocketEventListener(SimpMessagingTemplate messagingTemplate) {
         this.messagingTemplate = messagingTemplate;
     }
@@ -37,7 +40,7 @@ public class WebSocketEventListener {
             Message message = new Message();
             message.setFrom("System");
             message.setContent("Вошёл новый пользователь с ником " + username);
-            message.setTimestamp(LocalDateTime.now());
+            message.setTimestamp(LocalDateTime.now((ZoneId.of("Asia/Yekaterinburg"))));
             messagingTemplate.convertAndSend("/topic/messages", message);
         }
     }
@@ -46,11 +49,11 @@ public class WebSocketEventListener {
         String sessionId = event.getSessionId();
         String username = sessionIdUsernameMap.remove(sessionId);
         if (username != null) {
-            UserService userService = new UserService();
             userService.removeUser(username);
 
             Message message = new Message();
             message.setFrom("Система");
+            message.setTimestamp(LocalDateTime.now(ZoneId.of("Asia/Yekaterinburg")));
             message.setContent("Пользователь " + username + " покинул чат");
             messagingTemplate.convertAndSend("/topic/messages", message);
         }
