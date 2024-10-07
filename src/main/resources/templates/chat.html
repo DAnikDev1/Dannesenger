@@ -135,7 +135,6 @@
     </style>
 </head>
 <body>
-<h1>Добро пожаловать, <span th:text="${username}"></span>!</h1>
 
 <!-- Контейнер чата -->
 <div id="chat-container">
@@ -261,7 +260,7 @@
                 messageElement.classList.add('other');
             }
 
-            var timestamp = new Date(message.timestamp).toLocaleTimeString();
+            var timestamp = new Date(message.timestamp).toLocaleTimeString('ru-RU', { timeZone: 'Asia/Yekaterinburg' });
 
             var messageContent = `<span>${message.from}: ${message.content || ''}</span>`;
             if (message.image) {

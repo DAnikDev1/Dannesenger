@@ -36,4 +36,21 @@ public class ChatController {
         model.addAttribute("username", username);
         return "chat"; // Страница чата
     }
+
+    /**
+     * Обработчик GET запросов на /chat.
+     * Если пользователь уже в сессии, отображает страницу чата.
+     * Иначе перенаправляет на страницу входа.
+     */
+    @GetMapping("/chat")
+    public String getChat(HttpSession session, Model model) {
+        String username = (String) session.getAttribute("username");
+        if (username == null) {
+            // Пользователь не авторизован, перенаправляем на страницу входа
+            return "redirect:/";
+        }
+        // Пользователь авторизован, передаём его имя в модель и отображаем чат
+        model.addAttribute("username", username);
+        return "chat";
+    }
 }
